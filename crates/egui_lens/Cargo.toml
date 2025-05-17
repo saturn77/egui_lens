@@ -1,0 +1,31 @@
+[package]
+name = "egui_lens"
+version = "0.1.0"
+edition = "2024"
+authors = ["James Bonanno <atlantix-eda@proton.me>"]
+description = "A modular and customizable reactive event logger component for egui applications"
+license = "MIT"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+eframe = { workspace = true }
+egui = { workspace = true }
+egui_dock = { workspace = true }
+egui_extras = { workspace = true }
+egui_mobius_reactive = { workspace = true }
+egui_mobius = { workspace = true }
+egui_mobius_widgets = { workspace = true }
+chrono = { workspace = true }
+image = { workspace = true }
+once_cell = { workspace = true }
+egui_taffy = { workspace = true }
+dirs = { workspace = true }
+tokio = { workspace = true }
+env_logger = { workspace = true }
+log = { workspace = true }
+egui_plot = { workspace = true }
+ndarray = { workspace = true }
+sysinfo = { workspace = true }
+local-ip-address = { workspace = true }
+rfd = { workspace = true }

@@ -268,10 +268,14 @@ The `platform/` module contains helper code for building applications and is not
 
 ### Running the Examples
 
-To run the example, use the following command:
+As this is a Rust workspace, use the `-p` flag to run a specific example package:
 
 ```bash
-cargo run --example custom_log_types
+# Run the basic custom log types example
+cargo run -p basic_custom
+
+# Run the diskforge SD utility example
+cargo run -p diskforge
 ```
 
 ## Contributing

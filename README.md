@@ -24,15 +24,16 @@ This crate is part of the **egui_mobius** software stack and enables rapid const
 - **Custom log types** (CUSTOM(String)) using string identifiers (network, database, etc.)
 - **Flexible filtering** by log level and content
 
-  <img width=700 height=500 src="assets/demo_filters.gif"></img>
+
+  ![](https://github.com/saturn77/egui_lens/blob/master/assets/demo_filters.gif)
 
 - **Customizable columns** (timestamps, log levels, messages)
 
-  <img width=700 height=500 src="assets/demo_column_select.gif"></img>
 
+![](https://github.com/saturn77/egui_lens/blob/master/assets/demo_column_select.gif)
 - **Custom color themes** for different log components and types
   
-  <img width=700 height=500 src="assets/demo_custom_log_colors.gif"></img>
+![](https://github.com/saturn77/egui_lens/blob/master/assets/custom_log_colors.gif)
 
 - **Export logs to file** functionality
   

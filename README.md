@@ -34,12 +34,6 @@ This crate is part of the **egui_mobius** software stack and enables rapid const
   
 ![](https://github.com/saturn77/egui_lens/blob/master/assets/demo_custom_log_colors.gif)
 
-- **Export logs to file** functionality
-  
-  <!-- Once you create the GIF, uncomment and update the path below -->
-  <!-- <img width=700 height=500 src="assets/demo_file_save.gif"></img> -->
-
-  <!-- img width=700 height=500 src="assets/demo_save_logs.gif"></img>
 
 ## Installation
 

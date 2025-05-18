@@ -1,5 +1,5 @@
 <div align="center">
-<img width=260 height=200 src="https://raw.githubusercontent.com/saturn77/egui_mobius/master/assets/mobius_strip.png"></img>
+<img width=300 height=300 src="assets/egui_lens_logo.png"></img>
 
 # egui_lens 
 *Magnifying the surface of an egui application*
@@ -15,13 +15,13 @@
 
 All UI features come **ready-to-use out of the box** - including custom log colors, selectable columns, filtering options, and file export capabilities with no additional configuration required.
 
-This crate is part of the **egui_mobius** ecosystem and enables rapid construction of terminal-based applications with professional desktop-quality interfaces. 
+This crate is part of the **egui_mobius** software stack and enables rapid construction of terminal-based applications for professional desktop-quality interfaces. 
 
 ## Features
 
 - **Real-time logging display** with terminal-like interface
 - **Standard log levels** (INFO, WARNING, ERROR, DEBUG) with distinctive colors
-- **Custom log types** using string identifiers (network, database, security, etc.)
+- **Custom log types** (CUSTOM(String)) using string identifiers (network, database, etc.)
 - **Flexible filtering** by log level and content
 
   <img width=700 height=500 src="assets/demo_filters.gif"></img>
@@ -38,6 +38,8 @@ This crate is part of the **egui_mobius** ecosystem and enables rapid constructi
   
   <!-- Once you create the GIF, uncomment and update the path below -->
   <!-- <img width=700 height=500 src="assets/demo_file_save.gif"></img> -->
+
+  <img width=700 height=500 src="assets/demo_save_logs.gif"></img>
 
 ## Installation
 
@@ -121,8 +123,29 @@ impl eframe::App for MyApp {
     }
 }
 ```
+## Examples
 
-## Usage Guide
+See the `examples/` directory for complete working examples:
+
+- `custom_log_types.rs` - Using logs with different custom types and colors
+
+- `diskforge` - A SD Card formatter platform. Uses `egui_dock` and shows the logger as placed in a tab window.
+
+### Running the Examples
+
+As this is a Rust workspace, use the `-p` flag to run a specific example package:
+
+```bash
+# Run the basic custom log types example
+cargo run -p basic_custom
+
+# Run the diskforge SD utility example
+cargo run -p diskforge
+```
+
+## User Guide
+
+This User Guide shows the API for using `egui_lens` to develop your own customized application.
 
 ### Basic Setup
 
@@ -258,25 +281,7 @@ let count = state.log_count();
 logger.clear();
 ```
 
-## Examples
 
-See the `examples/` directory for complete working examples:
-
-- `custom_log_types.rs` - Using logs with different custom types and colors
-
-The `platform/` module contains helper code for building applications and is not an example.
-
-### Running the Examples
-
-As this is a Rust workspace, use the `-p` flag to run a specific example package:
-
-```bash
-# Run the basic custom log types example
-cargo run -p basic_custom
-
-# Run the diskforge SD utility example
-cargo run -p diskforge
-```
 
 ## Contributing
 

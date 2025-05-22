@@ -1,3 +1,23 @@
+//! Reactive Event Logger - a stateful logger responding to events. 
+//! This module provides a reactive event logger for the Mobius framework.
+//! It allows for logging messages with different severity levels and filtering them.
+//! The logger supports custom log types and provides a user interface for filtering and displaying logs.
+//!
+//! The logger is designed to be used with the Mobius framework and is reactive to changes in the state.
+//! It uses the `egui` library for the user interface and `egui_mobius_reactive` for reactivity.
+//!
+//! The logger supports the following log levels:
+//! - INFO
+//! - WARNING
+//! - ERROR
+//! - DEBUG
+//! - CUSTOM (for custom log types)
+//!
+//! The logger also supports filtering logs by type and by text content.
+//!
+//! The filtering options are stored in a `LogFilter` struct, which can be modified by the user.
+//! The logger state is stored in a `ReactiveEventLoggerState` struct, which is shared across the application.
+//!
 use eframe::egui;
 use egui_mobius_reactive::{Dynamic, ReactiveWidgetRef};
 use crate::payload::LoggerPayload;
@@ -305,6 +325,42 @@ impl<'a> ReactiveEventLogger<'a> {
             state,
             colors: None,
         }
+    }
+    
+    /// Save colors to gerber_viewer specific config directory
+    fn save_colors_for_gerber_viewer(colors: &LogColors) {
+        use std::path::PathBuf;
+        use std::fs;
+        
+        let colors = colors.clone();
+        std::thread::spawn(move || {
+            // Get config directory path for gerber_viewer
+            let config_dir = dirs::config_dir()
+                .unwrap_or_else(|| PathBuf::from("."))
+                .join("gerber_viewer");
+            
+            // Create config directory if it doesn't exist
+            if let Err(e) = fs::create_dir_all(&config_dir) {
+                eprintln!("Failed to create config directory: {}", e);
+                return;
+            }
+            
+            // Create config file path
+            let config_path = config_dir.join("log_colors.json");
+            
+            // Serialize colors to JSON
+            match serde_json::to_string_pretty(&colors) {
+                Ok(json) => {
+                    // Write JSON to file
+                    if let Err(e) = fs::write(&config_path, json) {
+                        eprintln!("Failed to write colors to {}: {}", config_path.display(), e);
+                    } else {
+                        println!("Successfully saved colors to {}", config_path.display());
+                    }
+                },
+                Err(e) => eprintln!("Failed to serialize colors: {}", e),
+            }
+        });
     }
     
     /// Show the filter modal dialog
@@ -930,8 +986,8 @@ impl<'a> ReactiveEventLogger<'a> {
                 let modal_id = egui::Id::new("logger_colors_modal");
                 egui::Window::new("Logger Colors")
                     .id(modal_id)
-                    .default_size(egui::Vec2::new(400.0, 650.0))  // Reduced width from 500 to 400
-                    .min_size(egui::Vec2::new(350.0, 550.0))      // Reduced min width from 450 to 350
+                    .default_size(egui::Vec2::new(450.0, 650.0))  // Adjusted height for better initial view
+                    .min_size(egui::Vec2::new(350.0, 550.0))      // Adjusted min height for better initial view
                     .collapsible(false)
                     .resizable(true)
                     .title_bar(true)
@@ -1120,50 +1176,57 @@ impl<'a> ReactiveEventLogger<'a> {
                                 ui.heading("Custom Log Types");
                                 ui.add_space(8.0);
                                 
-                                // Get the custom log types, limited to maximum 5 for display
+                                // Get all custom log types
                                 let mut custom_identifiers: Vec<String> = colors.custom_colors.keys().cloned().collect();
                                 custom_identifiers.sort(); // Sort them alphabetically
                                 
-                                // Store the total count before potentially taking a subset
+                                // Store the total count for UI feedback
                                 let total_count = custom_identifiers.len();
                                 
-                                // Determine which identifiers to display (limited to 4)
-                                let display_identifiers = if total_count > 4 {
-                                    // If we have more than 4, show the first 4
-                                    custom_identifiers.iter().take(4).cloned().collect::<Vec<String>>()
-                                } else {
-                                    custom_identifiers
-                                };
-                                
-                                if display_identifiers.is_empty() {
+                                if custom_identifiers.is_empty() {
                                     ui.label("No custom log types defined yet. Add one below.");
                                 } else {
-                                    // Two-column layout
+                                    ui.label(format!("Total custom types: {} (scroll to see all)", total_count));
+                                    ui.add_space(4.0);
+                                    
+                                    // Calculate available height for the scrollable area
+                                    let available_height = ui.available_height().min(200.0);
+                                    
+                                    // Two-column layout with scrollable area
                                     ui.columns(2, |columns| {
                                         // Left column: Log Levels
                                         columns[0].group(|ui| {
                                             ui.heading("Log Levels");
                                             ui.add_space(4.0);
                                             
-                                            let label_width = 70.0;  // Reduced from 90.0
+                                            let label_width = 70.0;
                                             
-                                            for identifier in &display_identifiers {
-                                                if let Some(wrapper) = colors.custom_colors.get_mut(identifier) {
-                                                    ui.horizontal(|ui| {
-                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                            ui.add_sized([label_width, 20.0], egui::Label::new(format!("{}:", identifier.to_uppercase())));
-                                                            if ui.color_edit_button_srgba(&mut wrapper.level_color).changed() {
-                                                                changed = true;
-                                                                
-                                                                // If sync mode is on, also update the message color
-                                                                if sync_colors {
-                                                                    wrapper.message_color = wrapper.level_color;
-                                                                }
-                                                            }
-                                                        });
-                                                    });
-                                                }
-                                            }
+                                            // Create a scrollable area for the level colors with visual indicators
+                                            egui::ScrollArea::vertical()
+                                                .max_height(available_height)
+                                                .auto_shrink([false, false])
+                                                .id_source("custom_levels_scroll")
+                                                .show(ui, |ui| {
+                                                    // Add visual indicator for scrolling
+                                                    ui.visuals_mut().widgets.noninteractive.bg_stroke.width = 1.0;
+                                                    for identifier in &custom_identifiers {
+                                                        if let Some(wrapper) = colors.custom_colors.get_mut(identifier) {
+                                                            ui.horizontal(|ui| {
+                                                                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                                                    ui.add_sized([label_width, 20.0], egui::Label::new(format!("{}:", identifier.to_uppercase())));
+                                                                    if ui.color_edit_button_srgba(&mut wrapper.level_color).changed() {
+                                                                        changed = true;
+                                                                        
+                                                                        // If sync mode is on, also update the message color
+                                                                        if sync_colors {
+                                                                            wrapper.message_color = wrapper.level_color;
+                                                                        }
+                                                                    }
+                                                                });
+                                                            });
+                                                        }
+                                                    }
+                                                });
                                         });
                                         
                                         // Right column: Messages
@@ -1171,33 +1234,36 @@ impl<'a> ReactiveEventLogger<'a> {
                                             ui.heading("Messages");
                                             ui.add_space(4.0);
                                             
-                                            let label_width = 70.0;  // Reduced from 90.0
+                                            let label_width = 70.0;
                                             
-                                            for identifier in &display_identifiers {
-                                                if let Some(wrapper) = colors.custom_colors.get_mut(identifier) {
-                                                    ui.horizontal(|ui| {
-                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                            ui.add_sized([label_width, 20.0], egui::Label::new(format!("{}:", identifier.to_uppercase())));
-                                                            if ui.color_edit_button_srgba(&mut wrapper.message_color).changed() {
-                                                                changed = true;
-                                                                
-                                                                // If sync mode is on, also update the level color
-                                                                if sync_colors {
-                                                                    wrapper.level_color = wrapper.message_color;
-                                                                }
-                                                            }
-                                                        });
-                                                    });
-                                                }
-                                            }
+                                            // Create a scrollable area for the message colors with visual indicators
+                                            egui::ScrollArea::vertical()
+                                                .max_height(available_height)
+                                                .auto_shrink([false, false])
+                                                .id_source("custom_messages_scroll")
+                                                .show(ui, |ui| {
+                                                    // Add visual indicator for scrolling
+                                                    ui.visuals_mut().widgets.noninteractive.bg_stroke.width = 1.0;
+                                                    for identifier in &custom_identifiers {
+                                                        if let Some(wrapper) = colors.custom_colors.get_mut(identifier) {
+                                                            ui.horizontal(|ui| {
+                                                                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                                                    ui.add_sized([label_width, 20.0], egui::Label::new(format!("{}:", identifier.to_uppercase())));
+                                                                    if ui.color_edit_button_srgba(&mut wrapper.message_color).changed() {
+                                                                        changed = true;
+                                                                        
+                                                                        // If sync mode is on, also update the level color
+                                                                        if sync_colors {
+                                                                            wrapper.level_color = wrapper.message_color;
+                                                                        }
+                                                                    }
+                                                                });
+                                                            });
+                                                        }
+                                                    }
+                                                });
                                         });
                                     });
-                                    
-                                    // Show a note if we limited the display
-                                    if total_count > 4 {
-                                        ui.add_space(4.0);
-                                        ui.label(format!("Note: Only showing 4 of {} custom types.", total_count));
-                                    }
                                 }
                             });
                         
@@ -1254,6 +1320,9 @@ impl<'a> ReactiveEventLogger<'a> {
                         if changed {
                             // Update shared colors
                             colors_dynamic.set(colors.clone());
+                            
+                            // Save colors to file with correct path for gerber_viewer
+                            Self::save_colors_for_gerber_viewer(&colors);
                         }
                         
                         ui.add_space(8.0);
@@ -1352,6 +1421,9 @@ impl<'a> ReactiveEventLogger<'a> {
                                         if ui.button("Apply").clicked() {
                                             // Update shared colors immediately
                                             colors_dynamic.set(colors.clone());
+                                            
+                                            // Save colors to file with correct path for gerber_viewer
+                                            Self::save_colors_for_gerber_viewer(&colors);
                                         }
                                     });
                                 });

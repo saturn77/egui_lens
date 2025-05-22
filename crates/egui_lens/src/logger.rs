@@ -1337,7 +1337,7 @@ impl<'a> ReactiveEventLogger<'a> {
                                 // Static storage for the new custom type name
                                 let mut new_custom_type = ui.ctx().memory_mut(|mem| {
                                     mem.data.get_temp::<String>(egui::Id::new("new_custom_log_type"))
-                                        .unwrap_or_else(String::new)
+                                        .unwrap_or_default()
                                 });
                                 
                                 // Input for new custom type name

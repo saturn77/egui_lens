@@ -56,6 +56,12 @@ pub const SOFT_GREEN: egui::Color32 = egui::Color32::from_rgb(150, 255, 150);
 pub const SOFT_BLUE: egui::Color32 = egui::Color32::from_rgb(150, 150, 255);
 pub const LIGHT_GRAY: egui::Color32 = egui::Color32::from_rgb(180, 180, 180);
 
+impl Default for LoggerPayload {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl LoggerPayload {
     /// Create a new empty log payload
     pub fn new() -> Self {

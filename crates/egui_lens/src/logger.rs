@@ -660,7 +660,7 @@ impl<'a> ReactiveEventLogger<'a> {
         let mut log_content = String::new();
         
         // Add a header with timestamp
-        log_content.push_str(&format!("--- Logger Export ---\n"));
+        log_content.push_str("--- Logger Export ---\n");
         log_content.push_str(&format!("Exported: {}\n\n", chrono::Local::now().format("%Y-%m-%d %H:%M:%S")));
         
         // Process logs chronologically (oldest first)
@@ -1205,7 +1205,7 @@ impl<'a> ReactiveEventLogger<'a> {
                                             egui::ScrollArea::vertical()
                                                 .max_height(available_height)
                                                 .auto_shrink([false, false])
-                                                .id_source("custom_levels_scroll")
+                                                .id_salt("custom_levels_scroll")
                                                 .show(ui, |ui| {
                                                     // Add visual indicator for scrolling
                                                     ui.visuals_mut().widgets.noninteractive.bg_stroke.width = 1.0;
@@ -1240,7 +1240,7 @@ impl<'a> ReactiveEventLogger<'a> {
                                             egui::ScrollArea::vertical()
                                                 .max_height(available_height)
                                                 .auto_shrink([false, false])
-                                                .id_source("custom_messages_scroll")
+                                                .id_salt("custom_messages_scroll")
                                                 .show(ui, |ui| {
                                                     // Add visual indicator for scrolling
                                                     ui.visuals_mut().widgets.noninteractive.bg_stroke.width = 1.0;
@@ -1337,7 +1337,7 @@ impl<'a> ReactiveEventLogger<'a> {
                                 // Static storage for the new custom type name
                                 let mut new_custom_type = ui.ctx().memory_mut(|mem| {
                                     mem.data.get_temp::<String>(egui::Id::new("new_custom_log_type"))
-                                        .unwrap_or_else(|| String::new())
+                                        .unwrap_or_else(String::new)
                                 });
                                 
                                 // Input for new custom type name
@@ -1518,7 +1518,7 @@ impl<'a> ReactiveEventLogger<'a> {
                                 }
                                 
                                 if show_log_level {
-                                    let (level_text, level_color) = get_log_level_text_and_color(&log, &colors);
+                                    let (level_text, level_color) = get_log_level_text_and_color(log, &colors);
                                     ui.add_sized([LEVEL_WIDTH, 20.0], 
                                         egui::Label::new(
                                             egui::RichText::new(level_text)

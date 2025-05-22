@@ -12,12 +12,11 @@
 //! including saving and loading color settings.
 //! 
 //! Example usage:
-//! ```
+//! ```no_run
 //! use platform::banner::Banner;
 //! use platform::parameters::gui;
 //! use platform::config_operations;
 //!
-//! fn main() {
 //! let mut banner = Banner::new();
 //! banner.format();
 //! banner.print();
@@ -25,7 +24,6 @@
 //! 
 //! // Load default configuration
 //! let colors = config_operations::load_default_color_configuration();
-//! }
 //! ```
 //!
 pub mod banner;

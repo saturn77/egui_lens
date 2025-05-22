@@ -58,6 +58,17 @@ struct Tab {
     _surface  : SurfaceIndex,
     _node     : NodeIndex,
 }
+
+/// Parameters for tab content rendering
+struct TabParams<'a> {
+    reactive_logger_state: &'a Dynamic<ReactiveEventLoggerState>,
+    slider_value: &'a mut f32,
+    selected_option: &'a mut usize,
+    is_running: &'a mut bool,
+    is_formatted: &'a mut bool,
+    colors: &'a Dynamic<LogColors>,
+    volume_label: &'a mut String,
+}
 impl Tab {
     fn new(kind: TabKind, _surface: SurfaceIndex, _node: NodeIndex) -> Self {
         Self { kind, _surface, _node }
@@ -72,38 +83,35 @@ impl Tab {
             TabKind::SD => "SD".to_string(),
         }
     }
-    fn content(&self, ui: &mut egui::Ui, reactive_logger_state: &Dynamic<ReactiveEventLoggerState>, 
-              slider_value: &mut f32, selected_option: &mut usize, is_running: &mut bool, is_formatted: &mut bool,
-              colors: &Dynamic<LogColors>,
-              volume_label: &mut String) {
+    fn content(&self, ui: &mut egui::Ui, params: &mut TabParams<'_>) {
         match self.kind {
             TabKind::Settings => {
                 settings_panel::SettingsPanel::render(
                     ui,
-                    slider_value,
-                    selected_option,
-                    is_running,
-                    colors,
-                    reactive_logger_state, // Pass the ReactiveEventLoggerState that was passed in
-                    volume_label,
+                    params.slider_value,
+                    params.selected_option,
+                    params.is_running,
+                    params.colors,
+                    params.reactive_logger_state,
+                    params.volume_label,
                 );
             }
 
             TabKind::ReactiveLogger => {
                 // Create a ReactiveEventLogger using the state directly and pass the colors
-                let reactive_logger = ReactiveEventLogger::with_colors(reactive_logger_state, colors);
-                let _ = reactive_logger.show(ui);
+                let reactive_logger = ReactiveEventLogger::with_colors(params.reactive_logger_state, params.colors);
+                reactive_logger.show(ui);
             }
 
             TabKind::Control => {
                 control_panel::ControlPanel::render(
                     ui, 
-                    selected_option,
-                    is_running,
-                    is_formatted,
-                    colors,
-                    reactive_logger_state,
-                    volume_label,
+                    params.selected_option,
+                    params.is_running,
+                    params.is_formatted,
+                    params.colors,
+                    params.reactive_logger_state,
+                    params.volume_label,
                 );
             }
             TabKind::About => {
@@ -114,7 +122,7 @@ impl Tab {
                 TaffyPanel::render(ui);
             }
             TabKind::SD => {
-                sd_panel::SDPanel::render(ui, selected_option, volume_label, is_formatted);
+                sd_panel::SDPanel::render(ui, params.selected_option, params.volume_label, params.is_formatted);
             }
         }
     }
@@ -142,15 +150,16 @@ impl egui_dock::TabViewer for TabViewer<'_> {
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, tab: &mut Self::Tab) {
-        tab.content(ui, 
-            self.reactive_logger_state,
-            self.slider_value,  
-            &mut self.selected_option, 
-            &mut self.is_running,
-            &mut self.is_formatted,
-            &self.colors,
-            &mut self.volume_label,
-        );
+        let mut params = TabParams {
+            reactive_logger_state: self.reactive_logger_state,
+            slider_value: self.slider_value,
+            selected_option: self.selected_option,
+            is_running: self.is_running,
+            is_formatted: self.is_formatted,
+            colors: self.colors,
+            volume_label: self.volume_label,
+        };
+        tab.content(ui, &mut params);
     }
 }
 
@@ -210,7 +219,7 @@ impl eframe::App for MyApp {
             .show(
                 ctx,
                 &mut TabViewer {
-                    reactive_logger_state: &mut self.reactive_logger_state, 
+                    reactive_logger_state: &self.reactive_logger_state, 
                     slider_value: &mut self.slider_value,
                     selected_option: &mut self.selected_option,
                     is_running: &mut self.is_running,

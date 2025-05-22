@@ -42,13 +42,13 @@ impl<'a, T: Clone + Send + 'static> Latch<'a, T> {
     }
 }
 
-impl<'a, T: Clone + Send + 'static> Drop for Latch<'a, T> {
+impl<T: Clone + Send + 'static> Drop for Latch<'_, T> {
     fn drop(&mut self) {
         self.dynamic.set(self.value.clone());
     }
 }
 
-impl<'a, T: Clone + Send> Deref for Latch<'a, T> {
+impl<T: Clone + Send> Deref for Latch<'_, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -56,7 +56,7 @@ impl<'a, T: Clone + Send> Deref for Latch<'a, T> {
     }
 }
 
-impl<'a, T: Clone + Send> DerefMut for Latch<'a, T> {
+impl<T: Clone + Send> DerefMut for Latch<'_, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.value
     }

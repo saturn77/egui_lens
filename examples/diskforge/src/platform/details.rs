@@ -48,8 +48,7 @@ impl Details {
         let mut detected_os = String::new();
         
         // First try to read /etc/os-release which most modern distros have
-        match std::fs::read_to_string("/etc/os-release") {
-            Ok(content) => {
+        if let Ok(content) = std::fs::read_to_string("/etc/os-release") {
                 // For Linux Mint, PRETTY_NAME contains "Linux Mint" but NAME still says "Ubuntu"
                 // Try PRETTY_NAME first for distros like Mint that customize Ubuntu
                 let mut found = false;
@@ -85,14 +84,11 @@ impl Details {
                         }
                     }
                 }
-            },
-            Err(_) => {}
         }
         
         // If os-release didn't work, try lsb-release
         if detected_os.is_empty() {
-            match std::fs::read_to_string("/etc/lsb-release") {
-                Ok(content) => {
+            if let Ok(content) = std::fs::read_to_string("/etc/lsb-release") {
                     for line in content.lines() {
                         if line.starts_with("DISTRIB_DESCRIPTION=") {
                             let name = line.trim_start_matches("DISTRIB_DESCRIPTION=")
@@ -102,8 +98,6 @@ impl Details {
                             break;
                         }
                     }
-                },
-                Err(_) => {}
             }
         }
         
@@ -123,19 +117,19 @@ impl Details {
             }
         } else if let Some(alpha) = System::name() {
             // Fallback to the basic system name
-            self.name = format!("{alpha}");
+            self.name = alpha;
         }
 
         if let Some(beta) = System::kernel_version() {
-            self.kernel = format!("{beta}");
+            self.kernel = beta;
         }
 
         if let Some(gamma) = System::os_version() {
-            self.version = format!("{gamma}");
+            self.version = gamma;
         }
 
         if let Some(delta) = System::host_name() {
-            self.host_name = format!("{delta}");
+            self.host_name = delta;
         }
 
         // Using physical_core_count as an associated function instead of a method
@@ -150,7 +144,7 @@ impl Details {
         // Get CPU info from the first CPU
         if let Some(cpu) = sys.cpus().first() {
             self.cpu_freq = format!("{:.2} GHz", cpu.frequency() as f64 / 1000.0);
-            self.cpu_brand = format!("{}", cpu.brand());
+            self.cpu_brand = cpu.brand().to_string();
         }
     }
 
